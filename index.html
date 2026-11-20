@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Страница не найдена</title>
+    <!-- Подключение Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* Резкое приближение и сильная тряска монстра */
+        @keyframes monster-attack {
+            0% { transform: scale(0.35) translate(0, 0) rotate(0deg); }
+            8% { transform: scale(1.22) translate(-28px, -22px) rotate(-4deg); }
+            16% { transform: scale(1.15) translate(28px, 18px) rotate(4deg); }
+            24% { transform: scale(1.28) translate(-22px, 26px) rotate(-3deg); }
+            32% { transform: scale(1.18) translate(24px, -26px) rotate(5deg); }
+            40% { transform: scale(1.32) translate(-32px, 12px) rotate(-5deg); }
+            50% { transform: scale(1.2) translate(32px, -16px) rotate(3deg); }
+            60% { transform: scale(1.3) translate(-18px, -32px) rotate(-4deg); }
+            70% { transform: scale(1.18) translate(18px, 32px) rotate(4deg); }
+            80% { transform: scale(1.26) translate(-26px, -12px) rotate(-2deg); }
+            90% { transform: scale(1.22) translate(22px, 14px) rotate(3deg); }
+            100% { transform: scale(1.25) translate(0, 0) rotate(0deg); }
+        }
+
+        /* Красно-белый стробоскоп */
+        @keyframes strobe-bg {
+            0%, 100% { background-color: #050000; filter: contrast(160%); }
+            25% { background-color: #7f0000; filter: contrast(220%) invert(0.1); }
+            50% { background-color: #ffffff; filter: contrast(260%) invert(1); }
+            75% { background-color: #2b0000; filter: contrast(200%); }
+        }
+
+        /* Дёргание зрачков */
+        @keyframes pupil-twitch {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-4px, 3px) scale(0.8); }
+            50% { transform: translate(5px, -3px) scale(1.2); }
+            75% { transform: translate(-3px, -4px) scale(0.85); }
+        }
+
+        .scare-strobe {
+            animation: strobe-bg 0.085s infinite steps(1);
+        }
+
+        .monster-animate {
+            animation: monster-attack 0.09s infinite linear;
+        }
+
+        .twitch-eyes {
+            animation: pupil-twitch 0.065s infinite;
+            transform-origin: center;
+        }
+
+        .static-noise {
+            background-image: repeating-radial-gradient(circle at 20% 35%, rgba(255,255,255,0.14) 0, rgba(0,0,0,0.45) 2px, transparent 3px);
+            background-size: 5px 5px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen w-screen flex flex-col justify-between items-center relative">
+
+    <!-- Верхняя техническая строка -->
+    <header class="w-full p-4 sm:p-6 flex justify-between items-center z-10">
+        <span class="text-xs font-mono text-slate-500 tracking-wider">HTTP_STATUS: 404</span>
+        <span id="audio-badge" class="text-xs font-mono text-slate-500">ЗВУК: ГОТОВ</span>
+    </header>
+
+    <!-- Основной экран 404 -->
+    <main id="normal-404" class="max-w-lg w-full px-6 text-center flex flex-col items-center z-10">
+        <div class="text-7xl sm:text-8xl font-bold text-slate-800 tracking-tighter mb-2 select-none">
+            404
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-semibold text-white mb-3">
+            404 — Страница не найдена
+        </h1>
+        <p class="text-sm sm:text-base text-slate-400 mb-8 leading-relaxed">
+            Похоже, вы зашли не туда... Запрашиваемая страница не существует или была навсегда удалена.
+        </p>
+
+        <!-- Две кнопки действия -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto">
+            <button id="home-btn" type="button" class="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-100 text-sm font-medium rounded-xl border border-slate-700 shadow-lg transition-all cursor-pointer">
+                Вернуться на главную
+            </button>
+            <button id="trap-btn" type="button" class="w-full sm:w-auto px-6 py-3.5 bg-red-600 hover:bg-red-500 active:scale-95 text-white text-sm font-semibold rounded-xl shadow-lg shadow-red-600/30 border border-red-500 transition-all cursor-pointer">
+                Не нажимать
+            </button>
+        </div>
+
+        <!-- Спокойное сообщение при нажатии на безопасную кнопку -->
+        <div id="safe-message" class="hidden mt-6 px-4 py-3 bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 text-sm rounded-xl shadow-md transition-all">
+            Вы в безопасности. Перенаправление на главную...
+        </div>
+
+        <!-- Подсказка о звуке -->
+        <p id="sound-hint" class="mt-5 text-xs text-slate-500">
+            Нажатие на красную кнопку включит звук и визуальные эффекты.
+        </p>
+    </main>
+
+    <!-- Нижняя панель -->
+    <footer class="w-full p-4 text-center z-10 text-xs text-slate-600">
+        Системный маршрутизатор • Ошибка адресации
+    </footer>
+
+    <!-- Полноэкранный контейнер скримера -->
+    <div id="screamer-overlay" style="position: fixed; inset: 0; z-index: 99999;" class="hidden flex-col items-center justify-center overflow-hidden bg-black">
+        <!-- Помехи поверх экрана -->
+        <div class="absolute inset-0 static-noise opacity-75 pointer-events-none"></div>
+
+        <!-- Высокодетализированное жуткое лицо (SVG) -->
+        <svg viewBox="0 0 600 600" class="w-full h-full max-w-4xl max-h-screen object-contain monster-animate drop-shadow-[0_0_45px_rgba(255,0,0,0.95)] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="skullSkin" cx="50%" cy="42%" r="56%">
+                    <stop offset="0%" stop-color="#e5e5e5"/>
+                    <stop offset="50%" stop-color="#8a8a8a"/>
+                    <stop offset="82%" stop-color="#262626"/>
+                    <stop offset="100%" stop-color="#050505"/>
+                </radialGradient>
+                <radialGradient id="darkSocket" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#000000"/>
+                    <stop offset="70%" stop-color="#140000"/>
+                    <stop offset="100%" stop-color="#520000"/>
+                </radialGradient>
+                <filter id="skinTexture">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" result="noise"/>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="9" />
+                </filter>
+            </defs>
+
+            <!-- Тёмная виньетка -->
+            <circle cx="300" cy="300" r="290" fill="#000000" opacity="0.9"/>
+
+            <!-- Вытянутый деформированный череп -->
+            <path d="M140,155 C130,55 470,55 460,155 C482,245 455,370 408,472 C372,550 335,590 300,590 C265,590 228,550 192,472 C145,370 118,245 140,155 Z" 
+                  fill="url(#skullSkin)" stroke="#000000" stroke-width="11" filter="url(#skinTexture)"/>
+
+            <!-- Глубокие морщины и впалые скулы -->
+            <path d="M162,255 Q205,318 182,408" fill="none" stroke="#0d0d0d" stroke-width="8" opacity="0.8"/>
+            <path d="M438,255 Q395,318 418,408" fill="none" stroke="#0d0d0d" stroke-width="8" opacity="0.8"/>
+            <path d="M205,130 Q300,154 395,130" fill="none" stroke="#171717" stroke-width="5" opacity="0.75"/>
+            <path d="M222,110 Q300,130 378,110" fill="none" stroke="#171717" stroke-width="4" opacity="0.65"/>
+
+            <!-- Глазницы -->
+            <ellipse cx="220" cy="212" rx="56" ry="46" transform="rotate(-11 220 212)" fill="url(#darkSocket)" stroke="#000" stroke-width="7"/>
+            <ellipse cx="380" cy="212" rx="56" ry="46" transform="rotate(11 380 212)" fill="url(#darkSocket)" stroke="#000" stroke-width="7"/>
+
+            <!-- Безумные красные глаза -->
+            <g class="twitch-eyes">
+                <!-- Левый глаз -->
+                <circle cx="222" cy="212" r="25" fill="#ff1a1a" stroke="#450000" stroke-width="3"/>
+                <circle cx="222" cy="212" r="16" fill="#ff6666" opacity="0.6"/>
+                <path d="M201,205 L213,210 M203,222 L215,217 M241,203 L230,209 M239,224 L229,216" stroke="#300000" stroke-width="2"/>
+                <circle cx="222" cy="212" r="6" fill="#000000"/>
+                <circle cx="220" cy="210" r="2" fill="#ffffff"/>
+
+                <!-- Правый глаз -->
+                <circle cx="378" cy="212" r="25" fill="#ff1a1a" stroke="#450000" stroke-width="3"/>
+                <circle cx="378" cy="212" r="16" fill="#ff6666" opacity="0.6"/>
+                <path d="M357,205 L369,210 M359,222 L371,217 M397,203 L386,209 M395,224 L385,216" stroke="#300000" stroke-width="2"/>
+                <circle cx="378" cy="212" r="6" fill="#000000"/>
+                <circle cx="376" cy="210" r="2" fill="#ffffff"/>
+            </g>
+
+            <!-- Кровавые подтёки -->
+            <path d="M192,246 Q186,308 196,362" fill="none" stroke="#8a0000" stroke-width="7" stroke-linecap="round"/>
+            <path d="M234,254 Q238,298 231,336" fill="none" stroke="#590000" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M408,246 Q414,308 404,362" fill="none" stroke="#8a0000" stroke-width="7" stroke-linecap="round"/>
+
+            <!-- Провалившиеся ноздри -->
+            <path d="M293,262 L276,314 Q291,320 298,306 Z" fill="#050505"/>
+            <path d="M307,262 L324,314 Q309,320 302,306 Z" fill="#050505"/>
+
+            <!-- Разорванный кричащий оскал -->
+            <path d="M200,362 C232,326 368,326 400,362 C432,415 398,552 300,558 C202,552 168,415 200,362 Z" 
+                  fill="#050000" stroke="#330000" stroke-width="10"/>
+            <ellipse cx="300" cy="452" rx="62" ry="76" fill="#1f0000"/>
+
+            <!-- Верхние острые зубы -->
+            <polygon points="218,353 229,394 240,348" fill="#dfd9c8" stroke="#000" stroke-width="2"/>
+            <polygon points="242,346 253,400 264,343" fill="#ebe6d5" stroke="#000" stroke-width="2"/>
+            <polygon points="266,342 277,394 288,341" fill="#d6d0be" stroke="#000" stroke-width="2"/>
+            <polygon points="290,341 300,405 310,341" fill="#ebe6d5" stroke="#000" stroke-width="2"/>
+            <polygon points="312,341 323,394 334,342" fill="#d6d0be" stroke="#000" stroke-width="2"/>
+            <polygon points="336,343 347,400 358,346" fill="#ebe6d5" stroke="#000" stroke-width="2"/>
+            <polygon points="360,348 371,394 382,353" fill="#dfd9c8" stroke="#000" stroke-width="2"/>
+
+            <!-- Нижние острые зубы -->
+            <polygon points="226,524 237,482 248,532" fill="#d6d0be" stroke="#000" stroke-width="2"/>
+            <polygon points="250,534 262,478 273,540" fill="#ebe6d5" stroke="#000" stroke-width="2"/>
+            <polygon points="275,542 287,485 298,545" fill="#d1cbb8" stroke="#000" stroke-width="2"/>
+            <polygon points="302,545 313,485 325,542" fill="#ebe6d5" stroke="#000" stroke-width="2"/>
+            <polygon points="327,540 338,478 350,534" fill="#d6d0be" stroke="#000" stroke-width="2"/>
+            <polygon points="352,532 363,482 374,524" fill="#d1cbb8" stroke="#000" stroke-width="2"/>
+
+            <!-- Натянутые сухожилия по краям пасти -->
+            <path d="M204,372 Q222,445 219,515" fill="none" stroke="#590000" stroke-width="6"/>
+            <path d="M396,372 Q378,445 381,515" fill="none" stroke="#590000" stroke-width="6"/>
+        </svg>
+
+        <!-- Кнопка «Сбросить» поверх скримера через 2.5 секунды -->
+        <div class="absolute bottom-8 inset-x-0 flex justify-center z-50">
+            <button id="reset-btn" type="button" class="hidden px-6 py-3 bg-red-950/90 hover:bg-red-800 active:scale-95 text-red-100 text-sm font-semibold border border-red-500/70 rounded-xl shadow-2xl cursor-pointer transition-all">
+                Сбросить
+            </button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            let isTriggered = false;
+            let safeMsgTimeout = null;
+            let strobeTimeout = null;
+            let audioCtx = null;
+
+            const normalView = document.getElementById('normal-404');
+            const screamerOverlay = document.getElementById('screamer-overlay');
+            const homeBtn = document.getElementById('home-btn');
+            const trapBtn = document.getElementById('trap-btn');
+            const safeMessage = document.getElementById('safe-message');
+            const resetBtn = document.getElementById('reset-btn');
+            const audioBadge = document.getElementById('audio-badge');
+            const soundHint = document.getElementById('sound-hint');
+
+            /**
+             * Кривая жёсткого нелинейного искажения (hard-clipping saturation) для разрывающего вокала
+             */
+            function makeDistortionCurve(amount) {
+                const samples = 44100;
+                const curve = new Float32Array(samples);
+                const deg = Math.PI / 180;
+                for (let i = 0; i < samples; ++i) {
+                    const x = (i * 2) / samples - 1;
+                    // Асимметричное насыщение придаёт голосу естественный «надрыв»
+                    const asym = x > 0 ? x * 1.15 : x * 0.92;
+                    curve[i] = ((3 + amount) * asym * 22 * deg) / (Math.PI + amount * Math.abs(asym));
+                }
+                return curve;
+            }
+
+            /**
+             * Генерация буфера розового/белого шума для хрипа и турбулентности воздуха в связках
+             */
+            function createVocalNoiseBuffer(ctx, duration) {
+                const bufferSize = Math.floor(ctx.sampleRate * duration);
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    const pink = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.08;
+                    b6 = white * 0.115926;
+                    // Смесь розового и белого шума с микро-импульсами срыва голоса
+                    const rasp = (Math.random() > 0.92) ? white * 0.85 : 0;
+                    data[i] = Math.max(-1, Math.min(1, pink * 1.6 + white * 0.35 + rasp));
+                }
+                return buffer;
+            }
+
+            /**
+             * Многослойный реалистичный хоррор-крик через Web Audio API:
+             * 1) Ударная саб-бас волна в момент t=0 для резкого испуга
+             * 2) Двухголосый вокал: пронзительный визг баньши (900-1450 Гц) + утробный демонический рык (220-350 Гц)
+             * 3) Формантная фильтрация человеческого крика (F1 ~820 Гц, F2 ~1550 Гц, F3 ~2850 Гц)
+             * 4) Хаотичный микро-джиттер связок (vocal fry) и хриплый воздушный шум
+             * 5) Жёсткий дисторшн, стерео-панорамирование и короткое металлическое эхо (slapback)
+             */
+            async function playHorrorScream() {
+                try {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) return;
+
+                    if (audioCtx) {
+                        try { await audioCtx.close(); } catch (e) {}
+                    }
+
+                    audioCtx = new AudioContextClass();
+
+                    // Обязательная разблокировка AudioContext внутри пользовательского клика
+                    if (audioCtx.state === 'suspended') {
+                        await audioCtx.resume();
+                    }
+
+                    if (audioCtx.state !== 'running') {
+                        audioBadge.textContent = 'ЗВУК: ЗАБЛОКИРОВАН БРАУЗЕРОМ';
+                        soundHint.textContent = 'Браузер заблокировал аудио. Нажмите «Сбросить» и попробуйте снова.';
+                        return;
+                    }
+
+                    audioBadge.textContent = 'ЗВУК: АКТИВЕН';
+
+                    const now = audioCtx.currentTime;
+                    const duration = 2.75;
+
+                    // Лимитер/компрессор на выходе для максимальной плотности без клиппинга браузера
+                    const compressor = audioCtx.createDynamicsCompressor();
+                    compressor.threshold.setValueAtTime(-10, now);
+                    compressor.knee.setValueAtTime(6, now);
+                    compressor.ratio.setValueAtTime(12, now);
+                    compressor.attack.setValueAtTime(0.002, now);
+                    compressor.release.setValueAtTime(0.15, now);
+
+                    const masterGain = audioCtx.createGain();
+                    masterGain.gain.setValueAtTime(0.01, now);
+                    masterGain.gain.exponentialRampToValueAtTime(1.0, now + 0.025);
+                    masterGain.gain.setValueAtTime(0.95, now + 1.85);
+                    masterGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                    compressor.connect(masterGain);
+                    masterGain.connect(audioCtx.destination);
+
+                    // --- СЛОЙ 1: Резкий низкочастотный удар (Sub-Bass Jump-Scare Impact) ---
+                    const impactOsc = audioCtx.createOscillator();
+                    const impactGain = audioCtx.createGain();
+                    impactOsc.type = 'sine';
+                    impactOsc.frequency.setValueAtTime(165, now);
+                    impactOsc.frequency.exponentialRampToValueAtTime(34, now + 0.28);
+
+                    impactGain.gain.setValueAtTime(0.95, now);
+                    impactGain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+
+                    impactOsc.connect(impactGain);
+                    impactGain.connect(compressor);
+                    impactOsc.start(now);
+                    impactOsc.stop(now + 0.45);
+
+                    // --- СЛОЙ 2: Общая шина дисторшна и металлического slapback-ревера ---
+                    const vocalPreDistortion = audioCtx.createWaveShaper();
+                    vocalPreDistortion.curve = makeDistortionCurve(680);
+                    vocalPreDistortion.oversample = '4x';
+
+                    // Короткая стерео-задержка (slapback) для эффекта замкнутого бетонного помещения
+                    const delayL = audioCtx.createDelay();
+                    const delayR = audioCtx.createDelay();
+                    delayL.delayTime.value = 0.023;
+                    delayR.delayTime.value = 0.037;
+
+                    const feedbackGain = audioCtx.createGain();
+                    feedbackGain.gain.value = 0.28;
+
+                    const panLeft = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+                    const panRight = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+                    if (panLeft && panRight) {
+                        panLeft.pan.value = -0.65;
+                        panRight.pan.value = 0.65;
+                    }
+
+                    vocalPreDistortion.connect(compressor);
+                    vocalPreDistortion.connect(delayL);
+                    vocalPreDistortion.connect(delayR);
+                    delayL.connect(feedbackGain);
+                    feedbackGain.connect(delayR);
+
+                    if (panLeft && panRight) {
+                        delayL.connect(panLeft);
+                        delayR.connect(panRight);
+                        panLeft.connect(compressor);
+                        panRight.connect(compressor);
+                    } else {
+                        delayL.connect(compressor);
+                        delayR.connect(compressor);
+                    }
+
+                    // --- СЛОЙ 3: Формантные фильтры человеческого крика (F1, F2, F3) ---
+                    const formantConfigs = [
+                        { freq: 820,  peakFreq: 960,  q: 4.5, gain: 1.35 }, // F1 — широко открытый рот
+                        { freq: 1550, peakFreq: 1850, q: 5.5, gain: 1.55 }, // F2 — пронзительный резонанс глотки
+                        { freq: 2850, peakFreq: 3250, q: 6.2, gain: 1.25 }  // F3 — режущий «визг» связок
+                    ];
+
+                    const formantInput = audioCtx.createGain();
+                    formantInput.gain.value = 1.0;
+
+                    formantConfigs.forEach((fCfg) => {
+                        const bp = audioCtx.createBiquadFilter();
+                        bp.type = 'bandpass';
+                        bp.frequency.setValueAtTime(fCfg.freq, now);
+                        bp.frequency.exponentialRampToValueAtTime(fCfg.peakFreq, now + 0.22);
+                        bp.frequency.exponentialRampToValueAtTime(fCfg.freq * 0.88, now + duration);
+                        bp.Q.value = fCfg.q;
+
+                        const fGain = audioCtx.createGain();
+                        fGain.gain.value = fCfg.gain;
+
+                        formantInput.connect(bp);
+                        bp.connect(fGain);
+                        fGain.connect(vocalPreDistortion);
+                    });
+
+                    // --- СЛОЙ 4: Источники голосовых связок (Банши-визг + Демонический рык + Джиттер) ---
+                    const voiceLayers = [
+                        // Высокий пронзительный женский/баньши крик (левый/правый стерео-сдвиг)
+                        { type: 'sawtooth', fStart: 940,  fPeak: 1440, fEnd: 790,  gain: 0.55, pan: -0.35 },
+                        { type: 'sawtooth', fStart: 968,  fPeak: 1475, fEnd: 812,  gain: 0.55, pan: 0.35 },
+                        { type: 'triangle', fStart: 1180, fPeak: 1680, fEnd: 920,  gain: 0.35, pan: 0.0 },
+                        // Низкий утробный демонический голос на октаву ниже
+                        { type: 'sawtooth', fStart: 235,  fPeak: 345,  fEnd: 185,  gain: 0.65, pan: -0.2 },
+                        { type: 'square',   fStart: 244,  fPeak: 358,  fEnd: 192,  gain: 0.45, pan: 0.2 }
+                    ];
+
+                    voiceLayers.forEach((v, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        osc.type = v.type;
+
+                        // Нелинейная огибающая высоты тона с резким вдохом-взлётом и надрывом
+                        osc.frequency.setValueAtTime(v.fStart * 0.82, now);
+                        osc.frequency.exponentialRampToValueAtTime(v.fPeak, now + 0.14);
+                        osc.frequency.linearRampToValueAtTime(v.fPeak * 0.94, now + 0.65);
+                        osc.frequency.exponentialRampToValueAtTime(v.fPeak * 1.04, now + 1.15);
+                        osc.frequency.exponentialRampToValueAtTime(v.fEnd, now + duration);
+
+                        // Быстрый хаотичный микро-джиттер (vocal fry — дрожание разрывающихся связок)
+                        const jitterLfo = audioCtx.createOscillator();
+                        const jitterDepth = audioCtx.createGain();
+                        jitterLfo.type = 'sawtooth';
+                        jitterLfo.frequency.setValueAtTime(48 + idx * 9, now);
+                        jitterLfo.frequency.linearRampToValueAtTime(74 + idx * 11, now + duration);
+                        jitterDepth.gain.setValueAtTime(v.fStart * 0.085, now);
+
+                        jitterLfo.connect(jitterDepth);
+                        jitterDepth.connect(osc.frequency);
+
+                        const vGain = audioCtx.createGain();
+                        vGain.gain.setValueAtTime(v.gain, now);
+
+                        if (audioCtx.createStereoPanner) {
+                            const panner = audioCtx.createStereoPanner();
+                            panner.pan.value = v.pan;
+                            osc.connect(vGain);
+                            vGain.connect(panner);
+                            panner.connect(formantInput);
+                        } else {
+                            osc.connect(vGain);
+                            vGain.connect(formantInput);
+                        }
+
+                        osc.start(now);
+                        jitterLfo.start(now);
+                        osc.stop(now + duration);
+                        jitterLfo.stop(now + duration);
+                    });
+
+                    // --- СЛОЙ 5: Хриплый воздушный поток (турбулентность воздуха в горле) ---
+                    const noiseSource = audioCtx.createBufferSource();
+                    noiseSource.buffer = createVocalNoiseBuffer(audioCtx, duration);
+
+                    const noiseHighpass = audioCtx.createBiquadFilter();
+                    noiseHighpass.type = 'highpass';
+                    noiseHighpass.frequency.setValueAtTime(1100, now);
+
+                    const noiseBandpass = audioCtx.createBiquadFilter();
+                    noiseBandpass.type = 'bandpass';
+                    noiseBandpass.frequency.setValueAtTime(2400, now);
+                    noiseBandpass.Q.value = 1.4;
+
+                    const noiseGain = audioCtx.createGain();
+                    noiseGain.gain.setValueAtTime(0.05, now);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.85, now + 0.06);
+                    noiseGain.gain.setValueAtTime(0.75, now + 1.6);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+                    noiseSource.connect(noiseHighpass);
+                    noiseHighpass.connect(noiseBandpass);
+                    noiseBandpass.connect(noiseGain);
+                    noiseGain.connect(formantInput);
+
+                    noiseSource.start(now);
+                    noiseSource.stop(now + duration);
+
+                } catch (err) {
+                    console.warn('Ошибка воспроизведения звука скримера:', err);
+                }
+            }
+
+            /**
+             * Запуск скримера
+             */
+            function triggerScreamer() {
+                if (isTriggered) return;
+                isTriggered = true;
+
+                if (safeMsgTimeout) clearTimeout(safeMsgTimeout);
+                if (strobeTimeout) clearTimeout(strobeTimeout);
+
+                safeMessage.classList.add('hidden');
+                normalView.classList.add('hidden');
+
+                screamerOverlay.classList.remove('hidden');
+                screamerOverlay.classList.add('flex', 'scare-strobe');
+
+                // Вибрация на мобильных устройствах
+                if (navigator.vibrate) {
+                    try { navigator.vibrate([250, 60, 350, 60, 450]); } catch (e) {}
+                }
+
+                // Запуск звука строго в обработчике клика
+                playHorrorScream();
+
+                // Через 2.5 секунды выключаем мерцание и показываем кнопку «Сбросить»
+                strobeTimeout = setTimeout(() => {
+                    if (!isTriggered) return;
+                    screamerOverlay.classList.remove('scare-strobe');
+                    resetBtn.classList.remove('hidden');
+                }, 2500);
+            }
+
+            /**
+             * Остановка звука и возврат к обычной странице 404
+             */
+            function resetPage() {
+                isTriggered = false;
+                if (strobeTimeout) clearTimeout(strobeTimeout);
+
+                if (audioCtx) {
+                    try { audioCtx.close(); } catch (e) {}
+                    audioCtx = null;
+                }
+
+                screamerOverlay.classList.add('hidden');
+                screamerOverlay.classList.remove('flex', 'scare-strobe');
+                resetBtn.classList.add('hidden');
+                normalView.classList.remove('hidden');
+                audioBadge.textContent = 'ЗВУК: ГОТОВ';
+            }
+
+            // Привязка событий (click для максимальной надёжности)
+            homeBtn.addEventListener('click', () => {
+                safeMessage.classList.remove('hidden');
+                if (safeMsgTimeout) clearTimeout(safeMsgTimeout);
+                safeMsgTimeout = setTimeout(() => {
+                    safeMessage.classList.add('hidden');
+                }, 4000);
+            });
+
+            trapBtn.addEventListener('click', () => {
+                triggerScreamer();
+            });
+
+            resetBtn.addEventListener('click', () => {
+                resetPage();
+            });
+        })();
+    </script>
+</body>
+</html>
